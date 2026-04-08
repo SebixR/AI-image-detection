@@ -1,0 +1,16 @@
+services:
+  ml:
+    build: .
+    container_name: ml-container
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - HF_HOME=/workspace/hf_models
+    volumes:
+      - ./src:/workspace/src
+      - ./data:/workspace/data
+      - ./hf_models:/workspace/hf_models
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
