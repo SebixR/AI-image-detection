@@ -1,6 +1,6 @@
 data/
 venv/
 hf_models/
-src/DIRE-main/
+src/DIRE-main/checkpoints/
 
 src/__pycache__/
