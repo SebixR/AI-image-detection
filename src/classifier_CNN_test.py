@@ -6,16 +6,7 @@ from DIRE_tensor_dataset_loader import DIRETensorDataset
 from sklearn.metrics import classification_report, confusion_matrix
 from torchvision import transforms
 from PNG_dataset_loader import PNGDataset
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-model = DIRECNN()
-model.load_state_dict(
-  torch.load("/home/user1/ml-project/CNN_model_tensor_SDv5_20epochs.pth",
-             map_location=device)
-)
-model.to(device)
-model.eval() # wyłącza dropout i ustawia BatchNorm w tryb testowy (taki reset chyba po prostu)
+from pathlib import Path
 
 # Load test data
 def loadPNGs():
@@ -41,39 +32,62 @@ def loadDIRETensor():
 
   return ConcatDataset([test_fake_dataset, test_real_dataset])
 
-test_dataset = loadDIRETensor()
-# test_dataset = loadPNGs()
+def test(model_path: str) -> None:
+  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-test_loader = DataLoader(
-    test_dataset,
-    batch_size=8,
-    shuffle=False,
-    num_workers=4
-)
+  model = DIRECNN()
+  model.load_state_dict(
+    torch.load(model_path,
+              map_location=device)
+  )
+  model.to(device)
+  model.eval() # wyłącza dropout i ustawia BatchNorm w tryb testowy (taki reset chyba po prostu)
 
-# Test
-all_preds = []
-all_labels = []
+  test_dataset = loadDIRETensor()
+  # test_dataset = loadPNGs()
 
-with torch.no_grad():
-  for x, y in test_loader:
-    x = x.to(device)
-    y = y.to(device)
+  test_loader = DataLoader(
+      test_dataset,
+      batch_size=8,
+      shuffle=False,
+      num_workers=4
+  )
 
-    logits = model(x)
-    logits = logits.squeeze()
+  # Test
+  all_preds = []
+  all_labels = []
 
-    probs = torch.sigmoid(logits) # [0, 1]
-    preds = (probs > 0.5).float() # 0 or 1
+  with torch.no_grad():
+    for x, y in test_loader:
+      x = x.to(device)
+      y = y.to(device)
 
-    all_preds.append(preds.cpu())
-    all_labels.append(y.cpu())
+      logits = model(x)
+      logits = logits.squeeze()
 
-all_preds = torch.cat(all_preds)
-all_labels = torch.cat(all_labels)
+      probs = torch.sigmoid(logits) # [0, 1]
+      preds = (probs > 0.5).float() # 0 or 1
 
-accuracy = (all_preds == all_labels).float().mean()
-print(f"Accuracy: {accuracy:.4f}")
+      all_preds.append(preds.cpu())
+      all_labels.append(y.cpu())
 
-print(confusion_matrix(all_labels, all_preds))
-print(classification_report(all_labels, all_preds, digits=4))
+  all_preds = torch.cat(all_preds)
+  all_labels = torch.cat(all_labels)
+
+  accuracy = (all_preds == all_labels).float().mean()
+  print(f"Accuracy: {accuracy:.4f}")
+
+  print(confusion_matrix(all_labels, all_preds))
+  print(classification_report(all_labels, all_preds, digits=4))
+
+def main():
+  folder = Path("/home/user1/ml-project")
+
+  for file_path in sorted(folder.glob("CNN_model_*"), key=lambda p: p.name):
+    if file_path.is_file():
+      print(f"File: {file_path}")
+      test(model_path=file_path)
+      print()
+
+if __name__ == "__main__":
+  main()
