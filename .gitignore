@@ -2,5 +2,6 @@ data/
 venv/
 hf_models/
 src/DIRE-main/checkpoints/
+CNN_models/
 
 src/__pycache__/
