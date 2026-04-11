@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset
 from pathlib import Path
 import torch
+import os
 
 class DIRETensorDataset(Dataset):
   def __init__(self, root_dir, mean=None, std=None):
@@ -16,9 +17,11 @@ class DIRETensorDataset(Dataset):
 
     dire = data["dire"].float()      # (3, H, W)
     label = torch.tensor(data["label"], dtype=torch.float32)
+    path = self.files[idx]
+    filename = os.path.basename(path)
 
     # Optional dataset-level normalization
     if self.mean is not None and self.std is not None:
         dire = (dire - self.mean) / (self.std + 1e-6)
 
-    return dire, label
+    return dire, label, filename

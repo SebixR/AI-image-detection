@@ -58,7 +58,7 @@ def test(model_path: str) -> None:
   all_labels = []
 
   with torch.no_grad():
-    for x, y in test_loader:
+    for x, y, filenames in test_loader:
       x = x.to(device)
       y = y.to(device)
 
@@ -67,6 +67,10 @@ def test(model_path: str) -> None:
 
       probs = torch.sigmoid(logits) # [0, 1]
       preds = (probs > 0.5).float() # 0 or 1
+
+      # prints names, predictions and labels for all files
+      # for f, p, l in zip(filenames, preds.cpu(), y.cpu()):
+      #   print(f"{f} - pred: {int(p)} - label: {int(l)}")
 
       all_preds.append(preds.cpu())
       all_labels.append(y.cpu())
