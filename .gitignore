@@ -1,4 +1,5 @@
 data/
+data.zip
 venv/
 hf_models/
 src/DIRE-main/checkpoints/
