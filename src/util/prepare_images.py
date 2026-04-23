@@ -1,8 +1,8 @@
 from PIL import Image
 from pathlib import Path
 
-INPUT_DIR = Path("/home/user1/ml-project/data/original/test/real/full_raw")
-OUTPUT_DIR = Path("/home/user1/ml-project/data/original/test/real/full")
+INPUT_DIR = Path("/home/user1/ml-project/data/original/test/fake/full_raw")
+OUTPUT_DIR = Path("/home/user1/ml-project/data/original/test/fake/full")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 TARGET_SIZE = 512

@@ -7,10 +7,9 @@ import time
 from util.pil_to_tensor import pil_to_tensor
 from typing import Literal
 
-def calculate_DIRE(input_path: str, recons_path: str, dire_path: str, label: Literal["fake", "real"]) -> None:
-  # "CompVis/stable-diffusion-v1-4"
+def calculate_DIRE(model: str, input_path: str, recons_path: str, dire_path: str, label: Literal["fake", "real"]) -> None:
   pipe = StableDiffusionPipeline.from_pretrained( # from_pretrained - loads a ready-to-use, trained model
-      "stable-diffusion-v1-5/stable-diffusion-v1-5",
+      model,
       torch_dtype=torch.float16 # forces the model to use 16-bit floating point precision (I'm guessing the numbers in question are weights)
   )
   pipe.scheduler = DDIMScheduler.from_config( # a scheduler determines how noise is added and removed
@@ -112,6 +111,8 @@ def calculate_DIRE(input_path: str, recons_path: str, dire_path: str, label: Lit
 
 def main():
   calculate_DIRE(
+      # "CompVis/stable-diffusion-v1-4"
+    model="stable-diffusion-v1-5/stable-diffusion-v1-5",
     input_path="/home/user1/ml-project/data/original/test/real/for_stable_diffusion_v1-5",
     recons_path="/home/user1/ml-project/data/recons/test/real/for_stable_diffusion_v1-5",
     dire_path="/home/user1/ml-project/data/dire/test/real/for_stable_diffusion_v1-5",

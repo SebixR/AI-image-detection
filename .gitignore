@@ -4,5 +4,7 @@ venv/
 hf_models/
 src/DIRE-main/checkpoints/
 CNN_models/
+test_results/
+train_results/
 
 src/__pycache__/

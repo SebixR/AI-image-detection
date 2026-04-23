@@ -1,4 +1,5 @@
 from torch.utils.data import Dataset
+import torch.nn.functional as F
 from pathlib import Path
 import torch
 import os
@@ -22,6 +23,27 @@ class DIRETensorDataset(Dataset):
 
     # Optional dataset-level normalization
     if self.mean is not None and self.std is not None:
-        dire = (dire - self.mean) / (self.std + 1e-6)
+      dire = (dire - self.mean) / (self.std + 1e-6)
+
+    return dire, label, filename
+
+
+class ResizeWrapper(Dataset):
+  def __init__(self, base_dataset, size=(224, 224)):
+    self.base_dataset = base_dataset
+    self.size = size
+
+  def __len__(self):
+    return len(self.base_dataset)
+
+  def __getitem__(self, idx):
+    dire, label, filename = self.base_dataset[idx]
+
+    dire = F.interpolate(
+        dire.unsqueeze(0),
+        size=self.size,
+        mode="bilinear",
+        align_corners=False
+    ).squeeze(0)
 
     return dire, label, filename
