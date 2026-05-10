@@ -6,6 +6,9 @@ from pathlib import Path
 import time
 from util.pil_to_tensor import pil_to_tensor
 from typing import Literal
+from util.latent_to_image import latent_to_image
+
+torch.manual_seed(1234567) # seed for deterministic results
 
 def calculate_DIRE(model: str, input_path: str, recons_path: str, dire_path: str, label: Literal["fake", "real"]) -> None:
   pipe = StableDiffusionPipeline.from_pretrained( # from_pretrained - loads a ready-to-use, trained model
@@ -55,7 +58,7 @@ def calculate_DIRE(model: str, input_path: str, recons_path: str, dire_path: str
       # Encode to latent
       latent = pipe.vae.encode(original_tensor).latent_dist.sample() # the encode method returns an object with various parameters of the latent
       latent = latent * pipe.vae.config.scaling_factor # a constant defined within Stable Diffusion - not added if we're manually encoding and diffusing
-    
+
       # Sample noise
       noise = torch.randn_like(latent)
       # Compute noisy latent
@@ -65,12 +68,17 @@ def calculate_DIRE(model: str, input_path: str, recons_path: str, dire_path: str
         pipe.scheduler.timesteps[steps] # which noising step to stop at (between 1-1000 for DDIM)
       )
 
+      # Save noise example
+      # latent_to_image(pipe, z_t, img_path, "noised")
+     
       latents = z_t
       for step_idx, timestep in enumerate(pipe.scheduler.timesteps[steps:]):
         # Predict noise
         noise_pred = pipe.unet(latents, timestep, uncond_embeddings).sample
         # DDIM step
         latents = pipe.scheduler.step(noise_pred, timestep, latents).prev_sample
+
+        # latent_to_image(pipe, latents, img_path, f"{step_idx}_noised")
 
       # Decode latent
       recon_tensor = pipe.vae.decode(latents / pipe.vae.config.scaling_factor).sample
@@ -113,10 +121,10 @@ def main():
   calculate_DIRE(
       # "CompVis/stable-diffusion-v1-4"
     model="stable-diffusion-v1-5/stable-diffusion-v1-5",
-    input_path="/home/user1/ml-project/data/original/test/real/for_stable_diffusion_v1-5",
-    recons_path="/home/user1/ml-project/data/recons/test/real/for_stable_diffusion_v1-5",
-    dire_path="/home/user1/ml-project/data/dire/test/real/for_stable_diffusion_v1-5",
-    label="real"
+    input_path="/home/user1/ml-project/data/example",
+    recons_path="/home/user1/ml-project/data/example",
+    dire_path="/home/user1/ml-project/data/example",
+    label="fake"
   )
 
 if __name__ == "__main__":
